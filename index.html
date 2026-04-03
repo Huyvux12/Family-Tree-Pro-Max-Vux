@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gia Phả Nguyễn Tộc</title>
+  <meta
+    name="description"
+    content="Website gia phả với cây phả hệ động, hỗ trợ kéo thả, di chuyển và chỉnh sửa thông tin thành viên."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="masthead">
+      <div class="brand-column">
+        <p class="eyebrow">Gia phả dòng họ</p>
+        <h1>Cây gia phả tương tác để lưu giữ và sắp xếp thông tin các thế hệ.</h1>
+        <p class="lead">
+          Bạn có thể kéo thả từng nhánh, di chuyển khung nhìn, chỉnh sửa thông tin thành viên
+          và tổ chức lại cây gia phả theo cách trực quan hơn.
+        </p>
+      </div>
+
+      <div class="masthead-cards">
+        <article class="stat-card">
+          <span class="stat-label">Thành viên</span>
+          <strong class="stat-value" id="member-count">0</strong>
+          <p class="stat-copy">Tổng số thành viên hiện có trong cây.</p>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Thế hệ</span>
+          <strong class="stat-value" id="generation-count">0</strong>
+          <p class="stat-copy">Số lớp đời được ghi nhận trong dữ liệu.</p>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Trạng thái</span>
+          <strong class="stat-value small" id="storage-state">Đang sẵn sàng</strong>
+          <p class="stat-copy">Dữ liệu được lưu cục bộ trong trình duyệt.</p>
+        </article>
+      </div>
+    </header>
+
+    <main class="studio-grid">
+      <section class="panel control-panel">
+        <div class="panel-head">
+          <p class="panel-kicker">Điều khiển</p>
+          <h2>Bộ công cụ quản lý gia phả</h2>
+        </div>
+
+        <p class="panel-copy">
+          Chọn một thành viên trong cây để thêm nhánh mới, tạo anh em cùng thế hệ
+          hoặc xóa cả một nhánh khi cần sắp xếp lại.
+        </p>
+
+        <div class="action-cluster">
+          <button class="action-button primary" id="fit-view" type="button">Căn giữa cây</button>
+          <button class="action-button secondary" id="reset-tree" type="button">Khôi phục mẫu</button>
+        </div>
+
+        <div class="action-cluster">
+          <button class="action-button accent" id="add-child" type="button">Thêm con</button>
+          <button class="action-button secondary" id="add-sibling" type="button">Thêm anh em</button>
+          <button class="action-button ghost" id="delete-branch" type="button">Xóa nhánh</button>
+        </div>
+
+        <div class="action-cluster">
+          <button class="action-button secondary" id="export-json" type="button">Xuất JSON</button>
+          <label class="action-button secondary file-trigger" for="import-json">Nhập JSON</label>
+          <input id="import-json" type="file" accept="application/json" hidden />
+        </div>
+
+        <div class="legend-card">
+          <h3>Hướng dẫn nhanh</h3>
+          <ul class="legend-list">
+            <li>Kéo nền để di chuyển khung nhìn, dùng con lăn để phóng to hoặc thu nhỏ.</li>
+            <li>Kéo trực tiếp từng node để bố trí lại cây.</li>
+            <li>Chọn thành viên bất kỳ để sửa tên, năm tháng và ghi chú.</li>
+            <li>Mọi thay đổi được lưu tự động trong trình duyệt.</li>
+          </ul>
+        </div>
+
+        <div class="mini-metrics">
+          <div>
+            <span class="mini-label">Thành viên đang chọn</span>
+            <strong id="selected-node-label">Chưa chọn</strong>
+          </div>
+          <div>
+            <span class="mini-label">Tỷ lệ thu phóng</span>
+            <strong id="zoom-indicator">100%</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel workspace-panel">
+        <div class="workspace-toolbar">
+          <div>
+            <p class="panel-kicker">Không gian cây</p>
+            <h2>Cây gia phả</h2>
+          </div>
+          <div class="workspace-actions">
+            <button class="icon-button" id="zoom-out" type="button" aria-label="Thu nhỏ">-</button>
+            <button class="icon-button" id="zoom-in" type="button" aria-label="Phóng to">+</button>
+          </div>
+        </div>
+
+        <div class="canvas-shell" id="canvas-shell" aria-label="Cây gia phả">
+          <div class="canvas-badge">Kéo nền để di chuyển khung nhìn</div>
+          <div class="tree-viewport" id="tree-viewport">
+            <svg class="tree-links" id="tree-links" aria-hidden="true"></svg>
+            <div class="tree-layer" id="tree-layer"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel inspector-panel">
+        <div class="panel-head">
+          <p class="panel-kicker">Chỉnh sửa thành viên</p>
+          <h2>Thông tin thành viên</h2>
+        </div>
+
+        <p class="panel-copy" id="inspector-empty">
+          Chọn một thành viên trong cây để cập nhật nội dung, thế hệ và mô tả chi tiết.
+        </p>
+
+        <form class="inspector-form" id="inspector-form" autocomplete="off" hidden>
+          <label>
+            <span>Họ tên</span>
+            <input id="field-name" name="name" type="text" placeholder="Nhập tên thành viên" />
+          </label>
+
+          <label>
+            <span>Chức danh / vai trò</span>
+            <input id="field-role" name="role" type="text" placeholder="Ví dụ: Trưởng nhánh, hậu duệ..." />
+          </label>
+
+          <div class="field-grid">
+            <label>
+              <span>Thế hệ</span>
+              <input id="field-generation" name="generation" type="number" min="1" max="12" />
+            </label>
+
+            <label>
+              <span>Năm tháng</span>
+              <input id="field-years" name="years" type="text" placeholder="1892 - 1958" />
+            </label>
+          </div>
+
+          <label>
+            <span>Nhánh / chi</span>
+            <input id="field-branch" name="branch" type="text" placeholder="Nhánh trưởng, nhánh Bắc..." />
+          </label>
+
+          <label>
+            <span>Ghi chú</span>
+            <textarea
+              id="field-note"
+              name="note"
+              rows="5"
+              placeholder="Thêm ghi chú ngắn về kỷ niệm, nghề nghiệp, quê quán..."
+            ></textarea>
+          </label>
+        </form>
+
+        <div class="relationship-card">
+          <h3>Thông tin liên kết</h3>
+          <dl class="relationship-list">
+            <div>
+              <dt>Cha / mẹ</dt>
+              <dd id="relation-parent">-</dd>
+            </div>
+            <div>
+              <dt>Số con trực tiếp</dt>
+              <dd id="relation-children">0</dd>
+            </div>
+            <div>
+              <dt>Kích thước nhánh</dt>
+              <dd id="relation-branch-size">0</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
