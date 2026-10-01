@@ -219,6 +219,53 @@ textarea:focus-visible {
   margin-top: 16px;
 }
 
+.search-card {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.search-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.search-row input {
+  min-width: 0;
+  border: 1px solid rgba(238, 202, 142, 0.18);
+  border-radius: 999px;
+  background: rgba(13, 10, 8, 0.38);
+  color: var(--text);
+  padding: 0 15px;
+}
+
+.search-row input::placeholder {
+  color: rgba(211, 194, 168, 0.7);
+}
+
+.search-next {
+  white-space: nowrap;
+}
+
+.search-status {
+  min-height: 1.4em;
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .action-button {
   min-height: 46px;
   padding: 0 16px;
@@ -616,6 +663,14 @@ textarea:focus-visible {
   }
 
   .action-button {
+    width: 100%;
+  }
+
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .search-next {
     width: 100%;
   }
 

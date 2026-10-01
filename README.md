@@ -12,7 +12,9 @@ Project này được xây dựng bằng HTML, CSS và JavaScript thuần, khôn
 - Chỉnh sửa thông tin thành viên ngay trên giao diện
 - Thêm con, thêm anh em cùng thế hệ, xóa cả nhánh
 - Lưu tự động trong `localStorage`
+- Tìm nhanh thành viên theo tên, vai trò, nhánh, năm tháng hoặc ghi chú
 - Xuất và nhập dữ liệu bằng file JSON
+- Kiểm tra dữ liệu import để chặn ID trùng, parentId không tồn tại và quan hệ vòng
 
 ## Cấu trúc project
 

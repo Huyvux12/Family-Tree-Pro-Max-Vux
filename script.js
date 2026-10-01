@@ -163,12 +163,17 @@ const exportButton = document.querySelector("#export-json");
 const importInput = document.querySelector("#import-json");
 const zoomInButton = document.querySelector("#zoom-in");
 const zoomOutButton = document.querySelector("#zoom-out");
+const memberSearchInput = document.querySelector("#member-search");
+const searchNextButton = document.querySelector("#search-next");
+const searchStatus = document.querySelector("#search-status");
 
 let state = loadState();
 let selectedNodeId = state.nodes[0]?.id ?? null;
 let toastTimer = null;
 let interaction = null;
 let lastSavedMessage = "Đang sẵn sàng";
+let searchMatches = [];
+let searchMatchIndex = -1;
 
 renderScene();
 if (state.view) {
@@ -197,6 +202,14 @@ function bindEvents() {
   importInput.addEventListener("change", importTree);
   zoomInButton.addEventListener("click", () => zoomAroundCenter(ZOOM_STEP));
   zoomOutButton.addEventListener("click", () => zoomAroundCenter(-ZOOM_STEP));
+  memberSearchInput.addEventListener("input", handleMemberSearch);
+  memberSearchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      selectNextSearchMatch();
+    }
+  });
+  searchNextButton.addEventListener("click", selectNextSearchMatch);
 }
 
 function renderScene() {
@@ -518,6 +531,78 @@ function selectNode(nodeId) {
   updateActionState();
 }
 
+function handleMemberSearch() {
+  const query = normalizeSearchText(memberSearchInput.value.trim());
+
+  if (!query) {
+    searchMatches = [];
+    searchMatchIndex = -1;
+    searchStatus.textContent = "Nhập từ khóa để tìm nhanh trong toàn bộ cây.";
+    searchNextButton.disabled = false;
+    return;
+  }
+
+  searchMatches = state.nodes.filter((node) => {
+    const haystack = normalizeSearchText(
+      [node.name, node.role, node.branch, node.years, node.note, `thế hệ ${node.generation}`]
+        .filter(Boolean)
+        .join(" ")
+    );
+    return haystack.includes(query);
+  });
+
+  searchMatchIndex = -1;
+  searchNextButton.disabled = searchMatches.length === 0;
+
+  if (!searchMatches.length) {
+    searchStatus.textContent = "Không tìm thấy thành viên phù hợp.";
+    return;
+  }
+
+  searchStatus.textContent = `Tìm thấy ${searchMatches.length} kết quả. Nhấn Enter hoặc “Tìm tiếp”.`;
+  selectNextSearchMatch();
+}
+
+function selectNextSearchMatch() {
+  if (!searchMatches.length) {
+    const query = memberSearchInput.value.trim();
+    if (query) {
+      handleMemberSearch();
+    }
+    return;
+  }
+
+  searchMatchIndex = (searchMatchIndex + 1) % searchMatches.length;
+  const match = searchMatches[searchMatchIndex];
+  selectNode(match.id);
+  focusNodeInView(match);
+  searchStatus.textContent = `Kết quả ${searchMatchIndex + 1}/${searchMatches.length}: ${match.name || "Thành viên"}`;
+}
+
+function focusNodeInView(node) {
+  const card = getNodeCard(node.id);
+  if (!card) {
+    return;
+  }
+
+  const rect = canvasShell.getBoundingClientRect();
+  const scale = state.view?.scale ?? 1;
+  state.view = {
+    x: rect.width / 2 - (node.x + card.offsetWidth / 2) * scale,
+    y: rect.height / 2 - (node.y + card.offsetHeight / 2) * scale,
+    scale,
+  };
+  applyViewport();
+  persistState("", { quiet: true });
+}
+
+function normalizeSearchText(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("vi-VN");
+}
+
 function addChildNode() {
   const parent = findNode(selectedNodeId);
   if (!parent) {
@@ -639,7 +724,8 @@ async function importTree(event) {
     }
     persistState("Đã nhập dữ liệu JSON");
   } catch (error) {
-    announce("Tệp JSON không hợp lệ.");
+    console.error("Không thể nhập cây gia phả:", error);
+    announce(error instanceof Error ? error.message : "Tệp JSON không hợp lệ.");
   } finally {
     event.target.value = "";
   }
@@ -719,8 +805,8 @@ function normalizeImportedState(data) {
   }
 
   const nodes = candidateNodes.map((node, index) => ({
-    id: String(node.id || `imported-${index + 1}`),
-    parentId: node.parentId ? String(node.parentId) : null,
+    id: String(node.id || `imported-${index + 1}`).trim(),
+    parentId: node.parentId ? String(node.parentId).trim() : null,
     x: Number.isFinite(node.x) ? clamp(node.x, 40, CANVAS_WIDTH - 300) : 140 + index * 60,
     y: Number.isFinite(node.y) ? clamp(node.y, 40, CANVAS_HEIGHT - 240) : 160 + index * 40,
     name: String(node.name || "Thành viên"),
@@ -731,12 +817,7 @@ function normalizeImportedState(data) {
     note: String(node.note || ""),
   }));
 
-  const idSet = new Set(nodes.map((node) => node.id));
-  nodes.forEach((node) => {
-    if (node.parentId && !idSet.has(node.parentId)) {
-      node.parentId = null;
-    }
-  });
+  validateImportedNodes(nodes);
 
   return {
     nodes,
@@ -752,6 +833,48 @@ function normalizeImportedState(data) {
           }
         : null,
   };
+}
+
+function validateImportedNodes(nodes) {
+  const idSet = new Set();
+
+  nodes.forEach((node) => {
+    if (!node.id) {
+      throw new Error("Mỗi thành viên phải có ID hợp lệ.");
+    }
+
+    if (idSet.has(node.id)) {
+      throw new Error(`ID bị trùng: ${node.id}`);
+    }
+
+    idSet.add(node.id);
+  });
+
+  nodes.forEach((node) => {
+    if (node.parentId === node.id) {
+      throw new Error(`Thành viên ${node.id} không thể là cha/mẹ của chính mình.`);
+    }
+
+    if (node.parentId && !idSet.has(node.parentId)) {
+      throw new Error(`Không tìm thấy parentId ${node.parentId} cho ${node.id}.`);
+    }
+  });
+
+  const parentMap = new Map(nodes.map((node) => [node.id, node.parentId]));
+
+  nodes.forEach((node) => {
+    const seen = new Set([node.id]);
+    let parentId = node.parentId;
+
+    while (parentId) {
+      if (seen.has(parentId)) {
+        throw new Error(`Phát hiện quan hệ vòng tại ${node.id}.`);
+      }
+
+      seen.add(parentId);
+      parentId = parentMap.get(parentId) || null;
+    }
+  });
 }
 
 function getNodeBounds() {
