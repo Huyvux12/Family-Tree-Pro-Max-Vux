@@ -59,6 +59,23 @@
           hoặc xóa cả một nhánh khi cần sắp xếp lại.
         </p>
 
+        <div class="search-card">
+          <label class="search-label" for="member-search">Tìm thành viên</label>
+          <div class="search-row">
+            <input
+              id="member-search"
+              type="search"
+              placeholder="Tên, vai trò, nhánh, năm..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button class="action-button secondary search-next" id="search-next" type="button">Tìm tiếp</button>
+          </div>
+          <p class="search-status" id="search-status" aria-live="polite">
+            Nhập từ khóa để tìm nhanh trong toàn bộ cây.
+          </p>
+        </div>
+
         <div class="action-cluster">
           <button class="action-button primary" id="fit-view" type="button">Căn giữa cây</button>
           <button class="action-button secondary" id="reset-tree" type="button">Khôi phục mẫu</button>
