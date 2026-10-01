@@ -6,15 +6,43 @@ Project này được xây dựng bằng HTML, CSS và JavaScript thuần, khôn
 
 ## Tính năng chính
 
-- Hiển thị cây gia phả theo dạng node liên kết cha - con
-- Kéo thả từng thành viên để sắp xếp lại bố cục
-- Kéo nền để di chuyển khung nhìn, dùng nút hoặc con lăn để thu phóng
-- Chỉnh sửa thông tin thành viên ngay trên giao diện
-- Thêm con, thêm anh em cùng thế hệ, xóa cả nhánh
+### Giao diện
+- Thiết kế mới tông giấy dó ấm, có chế độ tối/sáng (phím `T`), responsive tới điện thoại (bảng chi tiết dạng bottom sheet)
+- Thẻ thành viên có avatar (ảnh hoặc chữ cái đầu), viền màu theo giới tính, nhãn đời, trạng thái "Đã mất"
+- Đường nối dạng khuỷu mềm, nhãn đời (I, II, III…) bên lề, minimap góc phải
+- Bật **Dòng dõi** để làm nổi tổ tiên và hậu duệ của người đang chọn, kèm breadcrumb từ thủy tổ
+
+### 4 chế độ xem
+- **Cây phả hệ**: kéo thả thành viên (giữ `Shift` để kéo cả nhánh), kéo nền, cuộn để zoom, thu gọn/mở rộng nhánh, tự sắp xếp có animation
+- **Danh sách**: bảng tất cả thành viên, sắp xếp theo từng cột
+- **Thống kê**: số thành viên theo đời/nhánh, tỷ lệ nam nữ, tuổi thọ trung bình, đông con nhất, sống thọ nhất
+- **Dòng thời gian**: năm sinh của các thành viên theo thập kỷ
+
+### Chỉnh sửa
+- Ngăn chi tiết: họ tên, giới tính, vai trò, đời, năm sinh–mất, nhánh, vợ/chồng, nghề nghiệp, quê quán, ảnh đại diện, ghi chú
+- Thêm con, thêm anh em, xóa nhánh (có nút hoàn tác ngay trên thông báo)
+- Hoàn tác/làm lại tới 100 bước, menu chuột phải trên thẻ
+- Bộ lọc theo giới tính, đời, nhánh; tìm nhanh bằng `Ctrl K`
+
+### Dữ liệu
 - Lưu tự động trong `localStorage`
-- Tìm nhanh thành viên theo tên, vai trò, nhánh, năm tháng hoặc ghi chú
-- Xuất và nhập dữ liệu bằng file JSON
-- Kiểm tra dữ liệu import để chặn ID trùng, parentId không tồn tại và quan hệ vòng
+- Xuất/nhập JSON, xuất ảnh PNG của cả cây
+- Kiểm tra dữ liệu nhập vào để chặn ID trùng, `parentId` không tồn tại và quan hệ vòng
+
+### Phím tắt
+
+| Phím | Chức năng |
+|---|---|
+| `Ctrl K` | Tìm thành viên |
+| `Ctrl Z` / `Ctrl Y` | Hoàn tác / Làm lại |
+| `N` / `S` | Thêm con / Thêm anh em |
+| `Delete` | Xóa nhánh đang chọn |
+| `C` | Thu gọn / mở nhánh |
+| `L` | Sắp xếp lại cây |
+| `F` | Vừa khung nhìn |
+| `+` / `-` | Phóng to / thu nhỏ |
+| `T` | Đổi giao diện sáng/tối |
+| `?` | Xem bảng phím tắt |
 
 ## Cấu trúc project
 
@@ -55,38 +83,6 @@ Sau đó mở trình duyệt tại địa chỉ tương ứng, ví dụ:
 http://localhost:8000
 ```
 
-## Cách sử dụng
-
-### 1. Di chuyển và thu phóng
-
-- Kéo nền để di chuyển khung nhìn
-- Dùng con lăn chuột để phóng to/thu nhỏ
-- Hoặc dùng nút `+` / `-`
-- Nút `Căn giữa cây` sẽ đưa cây về vùng nhìn hợp lý
-
-### 2. Chọn và chỉnh sửa thành viên
-
-- Bấm vào một node bất kỳ trong cây
-- Bảng bên phải sẽ hiện thông tin của thành viên đang chọn
-- Cập nhật các trường như:
-  - Họ tên
-  - Chức danh / vai trò
-  - Thế hệ
-  - Năm tháng
-  - Nhánh / chi
-  - Ghi chú
-
-### 3. Thêm và xóa nhánh
-
-- `Thêm con`: tạo node con trực tiếp
-- `Thêm anh em`: tạo node cùng cấp với thành viên đang chọn
-- `Xóa nhánh`: xóa thành viên đang chọn và toàn bộ hậu duệ phía dưới
-
-### 4. Xuất / nhập dữ liệu
-
-- `Xuất JSON`: tải toàn bộ dữ liệu cây hiện tại về máy
-- `Nhập JSON`: nạp lại dữ liệu từ file JSON đã xuất trước đó
-
 ## Dữ liệu được lưu như thế nào
 
 Project hiện tại lưu dữ liệu theo 2 cách:
@@ -99,10 +95,12 @@ Dữ liệu được lưu trong:
 localStorage
 ```
 
-Khóa đang sử dụng:
+Các khóa đang sử dụng:
 
 ```text
-giapha-editor-state-v2
+giapha-editor-state-v2   # dữ liệu cây
+giapha-theme             # giao diện sáng/tối
+giapha-prefs             # chế độ xem, trạng thái sidebar, dòng dõi
 ```
 
 Điều này có nghĩa là:
@@ -115,7 +113,7 @@ giapha-editor-state-v2
 
 Đây là cách phù hợp để sao lưu hoặc chuyển dữ liệu giữa các máy:
 
-1. Bấm `Xuất JSON`
+1. Mở menu `⋯` → `Xuất JSON`
 2. Giữ file JSON lại
 3. Khi cần, dùng `Nhập JSON` để nạp lại
 
@@ -128,10 +126,10 @@ Dữ liệu gia phả mặc định nằm trong file:
 Cụ thể là biến:
 
 ```js
-const defaultState = { ... }
+function createDefaultState() { ... }
 ```
 
-Nếu muốn đổi cây mặc định khi người dùng mở trang lần đầu, hãy sửa dữ liệu trong `defaultState`.
+Nếu muốn đổi cây mặc định khi người dùng mở trang lần đầu, hãy sửa dữ liệu trong `createDefaultState()`.
 
 ## Deploy lên GitHub Pages
 
@@ -188,20 +186,17 @@ Sửa trong:
 
 Các phần quan trọng:
 
-- `renderNodes()` để render node
-- `renderLinksBetweenNodes()` để vẽ liên kết
-- `addChildNode()` để thêm con
-- `addSiblingNode()` để thêm anh em
-- `deleteBranch()` để xóa nhánh
-- `persistState()` để lưu dữ liệu
+- `computeLayout()` để tính bố cục cây tự động
+- `renderScene()` / `createCard()` để render thẻ thành viên
+- `renderLinks()` để vẽ đường nối
+- `addChild()` / `addSibling()` / `deleteBranch()` để sửa cây
+- `mutate()` / `undo()` / `redo()` cho lịch sử thao tác
+- `renderList()` / `renderStats()` / `renderTimeline()` cho các chế độ xem khác
+- `persistNow()` để lưu dữ liệu
 
 ## Gợi ý phát triển tiếp
 
-- Thêm ảnh đại diện cho từng thành viên
-- Thêm trường ngày sinh, ngày mất, quê quán, nghề nghiệp
-- Thêm tìm kiếm theo tên
-- Thêm lọc theo thế hệ hoặc nhánh
-- Thêm chế độ xem toàn màn hình
+- In / xuất PDF
 - Đồng bộ dữ liệu lên cloud thay vì chỉ lưu cục bộ
 
 ## Giấy phép
