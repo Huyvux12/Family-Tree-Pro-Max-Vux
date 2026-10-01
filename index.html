@@ -3,210 +3,444 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gia Phả Nguyễn Tộc</title>
+  <title>Gia Phả Dòng Họ</title>
   <meta
     name="description"
-    content="Website gia phả với cây phả hệ động, hỗ trợ kéo thả, di chuyển và chỉnh sửa thông tin thành viên."
+    content="Cây gia phả tương tác: kéo thả, tự sắp xếp, tìm kiếm, lọc, thống kê, dòng thời gian, xuất ảnh và JSON."
   />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("giapha-theme");
+        var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (e) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
 </head>
 <body>
-  <div class="page-shell">
-    <header class="masthead">
-      <div class="brand-column">
-        <p class="eyebrow">Gia phả dòng họ</p>
-        <h1>Cây gia phả tương tác để lưu giữ và sắp xếp thông tin các thế hệ.</h1>
-        <p class="lead">
-          Bạn có thể kéo thả từng nhánh, di chuyển khung nhìn, chỉnh sửa thông tin thành viên
-          và tổ chức lại cây gia phả theo cách trực quan hơn.
-        </p>
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/><circle cx="12" cy="12" r="2.5"/></symbol>
+      <symbol id="i-layout" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5" rx="1.2"/><rect x="3" y="16" width="6" height="5" rx="1.2"/><rect x="15" y="16" width="6" height="5" rx="1.2"/><path d="M12 8v4M6 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 20V9M7 14l5-5 5 5M5 4h14"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+      <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></symbol>
+      <symbol id="i-child" viewBox="0 0 24 24"><circle cx="12" cy="6" r="3"/><path d="M12 9v5M7 21v-3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><path d="M19 4v4M17 6h4"/></symbol>
+      <symbol id="i-sibling" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a5 5 0 0 1 10 0M14 20a4 4 0 0 1 7-2.6"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+      <symbol id="i-tree" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5" rx="1.2"/><rect x="3" y="16" width="6" height="5" rx="1.2"/><rect x="15" y="16" width="6" height="5" rx="1.2"/><path d="M12 8v4M6 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+      <symbol id="i-branch" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 7"/></symbol>
+      <symbol id="i-collapse" viewBox="0 0 24 24"><path d="m7 9 5-5 5 5M7 15l5 5 5-5"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="m7 4 5 5 5-5M7 20l5-5 5 5"/></symbol>
+      <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+      <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4-2v-4L3 5Z"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9-9a4.6 4.6 0 0 1 9-2 4.6 4.6 0 0 1 9 2c-2 4.5-9 9-9 9Z"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+      <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+    <!-- ============ TOP BAR ============ -->
+    <header class="topbar">
+      <button class="icon-btn" id="sidebar-toggle" type="button" title="Ẩn/hiện bảng bên trái" aria-label="Ẩn/hiện bảng bên trái">
+        <svg class="ico"><use href="#i-sidebar"/></svg>
+      </button>
+
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M20 6v28M20 16c-5 0-9-3-10-7M20 16c5 0 9-3 10-7M20 24c-4 0-7-2-8-5M20 24c4 0 7-2 8-5"/><path d="M12 34h16"/></svg>
+        </div>
+        <div class="brand-text">
+          <input class="brand-title" id="family-title" type="text" maxlength="60" aria-label="Tên gia phả" spellcheck="false" />
+          <span class="brand-sub">Cây gia phả tương tác</span>
+        </div>
       </div>
 
-      <div class="masthead-cards">
-        <article class="stat-card">
-          <span class="stat-label">Thành viên</span>
-          <strong class="stat-value" id="member-count">0</strong>
-          <p class="stat-copy">Tổng số thành viên hiện có trong cây.</p>
-        </article>
-        <article class="stat-card">
-          <span class="stat-label">Thế hệ</span>
-          <strong class="stat-value" id="generation-count">0</strong>
-          <p class="stat-copy">Số lớp đời được ghi nhận trong dữ liệu.</p>
-        </article>
-        <article class="stat-card">
-          <span class="stat-label">Trạng thái</span>
-          <strong class="stat-value small" id="storage-state">Đang sẵn sàng</strong>
-          <p class="stat-copy">Dữ liệu được lưu cục bộ trong trình duyệt.</p>
-        </article>
+      <nav class="view-tabs" role="tablist" aria-label="Chế độ xem">
+        <button class="tab" role="tab" data-view="tree" aria-selected="true"><svg class="ico"><use href="#i-tree"/></svg><span>Cây phả hệ</span></button>
+        <button class="tab" role="tab" data-view="list" aria-selected="false"><svg class="ico"><use href="#i-list"/></svg><span>Danh sách</span></button>
+        <button class="tab" role="tab" data-view="stats" aria-selected="false"><svg class="ico"><use href="#i-chart"/></svg><span>Thống kê</span></button>
+        <button class="tab" role="tab" data-view="timeline" aria-selected="false"><svg class="ico"><use href="#i-clock"/></svg><span>Dòng thời gian</span></button>
+      </nav>
+
+      <div class="topbar-actions">
+        <button class="search-trigger" id="search-open" type="button">
+          <svg class="ico"><use href="#i-search"/></svg>
+          <span>Tìm thành viên…</span>
+          <kbd>Ctrl K</kbd>
+        </button>
+        <div class="btn-group">
+          <button class="icon-btn" id="undo-btn" type="button" title="Hoàn tác (Ctrl+Z)" aria-label="Hoàn tác"><svg class="ico"><use href="#i-undo"/></svg></button>
+          <button class="icon-btn" id="redo-btn" type="button" title="Làm lại (Ctrl+Y)" aria-label="Làm lại"><svg class="ico"><use href="#i-redo"/></svg></button>
+        </div>
+        <button class="icon-btn" id="theme-toggle" type="button" title="Đổi giao diện sáng/tối (T)" aria-label="Đổi giao diện sáng/tối">
+          <svg class="ico theme-sun"><use href="#i-sun"/></svg>
+          <svg class="ico theme-moon"><use href="#i-moon"/></svg>
+        </button>
+        <div class="menu-wrap">
+          <button class="icon-btn" id="more-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Thêm" aria-label="Thêm tùy chọn">
+            <svg class="ico"><use href="#i-more"/></svg>
+          </button>
+          <div class="dropdown" id="more-menu" role="menu" hidden>
+            <button role="menuitem" data-action="export-json"><svg class="ico"><use href="#i-download"/></svg>Xuất dữ liệu JSON</button>
+            <button role="menuitem" data-action="import-json"><svg class="ico"><use href="#i-upload"/></svg>Nhập dữ liệu JSON</button>
+            <button role="menuitem" data-action="export-png"><svg class="ico"><use href="#i-image"/></svg>Xuất ảnh cây (PNG)</button>
+            <hr />
+            <button role="menuitem" data-action="shortcuts"><svg class="ico"><use href="#i-keyboard"/></svg>Phím tắt</button>
+            <button role="menuitem" data-action="reset" class="danger"><svg class="ico"><use href="#i-reset"/></svg>Khôi phục dữ liệu mẫu</button>
+          </div>
+        </div>
       </div>
     </header>
 
-    <main class="studio-grid">
-      <section class="panel control-panel">
-        <div class="panel-head">
-          <p class="panel-kicker">Điều khiển</p>
-          <h2>Bộ công cụ quản lý gia phả</h2>
-        </div>
-
-        <p class="panel-copy">
-          Chọn một thành viên trong cây để thêm nhánh mới, tạo anh em cùng thế hệ
-          hoặc xóa cả một nhánh khi cần sắp xếp lại.
-        </p>
-
-        <div class="search-card">
-          <label class="search-label" for="member-search">Tìm thành viên</label>
-          <div class="search-row">
-            <input
-              id="member-search"
-              type="search"
-              placeholder="Tên, vai trò, nhánh, năm..."
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button class="action-button secondary search-next" id="search-next" type="button">Tìm tiếp</button>
+    <div class="workspace">
+      <!-- ============ SIDEBAR ============ -->
+      <aside class="sidebar" id="sidebar" aria-label="Tổng quan và bộ lọc">
+        <section class="side-section">
+          <h2 class="side-title">Tổng quan</h2>
+          <div class="kpis">
+            <div class="kpi"><svg class="ico"><use href="#i-users"/></svg><strong id="kpi-members">0</strong><span>Thành viên</span></div>
+            <div class="kpi"><svg class="ico"><use href="#i-layers"/></svg><strong id="kpi-generations">0</strong><span>Đời</span></div>
+            <div class="kpi"><svg class="ico"><use href="#i-heart"/></svg><strong id="kpi-living">0</strong><span>Còn sống</span></div>
+            <div class="kpi"><svg class="ico"><use href="#i-branch"/></svg><strong id="kpi-branches">0</strong><span>Nhánh</span></div>
           </div>
-          <p class="search-status" id="search-status" aria-live="polite">
-            Nhập từ khóa để tìm nhanh trong toàn bộ cây.
-          </p>
-        </div>
+        </section>
 
-        <div class="action-cluster">
-          <button class="action-button primary" id="fit-view" type="button">Căn giữa cây</button>
-          <button class="action-button secondary" id="reset-tree" type="button">Khôi phục mẫu</button>
-        </div>
+        <section class="side-section">
+          <div class="side-title-row">
+            <h2 class="side-title">Bộ lọc</h2>
+            <button class="link-btn" id="clear-filters" type="button" hidden>Bỏ lọc</button>
+          </div>
+          <p class="side-label">Giới tính</p>
+          <div class="segmented" id="filter-gender" role="radiogroup" aria-label="Lọc theo giới tính">
+            <button type="button" data-value="" aria-pressed="true">Tất cả</button>
+            <button type="button" data-value="male" aria-pressed="false"><i class="dot male"></i>Nam</button>
+            <button type="button" data-value="female" aria-pressed="false"><i class="dot female"></i>Nữ</button>
+          </div>
+          <p class="side-label">Đời</p>
+          <div class="chips" id="filter-generations"></div>
+          <p class="side-label">Nhánh</p>
+          <div class="chips" id="filter-branches"></div>
+          <p class="filter-result" id="filter-result" aria-live="polite"></p>
+        </section>
 
-        <div class="action-cluster">
-          <button class="action-button accent" id="add-child" type="button">Thêm con</button>
-          <button class="action-button secondary" id="add-sibling" type="button">Thêm anh em</button>
-          <button class="action-button ghost" id="delete-branch" type="button">Xóa nhánh</button>
-        </div>
-
-        <div class="action-cluster">
-          <button class="action-button secondary" id="export-json" type="button">Xuất JSON</button>
-          <label class="action-button secondary file-trigger" for="import-json">Nhập JSON</label>
-          <input id="import-json" type="file" accept="application/json" hidden />
-        </div>
-
-        <div class="legend-card">
-          <h3>Hướng dẫn nhanh</h3>
-          <ul class="legend-list">
-            <li>Kéo nền để di chuyển khung nhìn, dùng con lăn để phóng to hoặc thu nhỏ.</li>
-            <li>Kéo trực tiếp từng node để bố trí lại cây.</li>
-            <li>Chọn thành viên bất kỳ để sửa tên, năm tháng và ghi chú.</li>
-            <li>Mọi thay đổi được lưu tự động trong trình duyệt.</li>
+        <section class="side-section">
+          <h2 class="side-title">Chú thích</h2>
+          <ul class="legend">
+            <li><i class="swatch male"></i>Nam</li>
+            <li><i class="swatch female"></i>Nữ</li>
+            <li><i class="swatch unknown"></i>Chưa rõ giới tính</li>
+            <li><i class="swatch root"></i>Thủy tổ (gốc)</li>
+            <li><i class="line-hl"></i>Dòng dõi của người đang chọn</li>
           </ul>
-        </div>
+        </section>
 
-        <div class="mini-metrics">
-          <div>
-            <span class="mini-label">Thành viên đang chọn</span>
-            <strong id="selected-node-label">Chưa chọn</strong>
-          </div>
-          <div>
-            <span class="mini-label">Tỷ lệ thu phóng</span>
-            <strong id="zoom-indicator">100%</strong>
-          </div>
-        </div>
-      </section>
+        <section class="side-section tips">
+          <h2 class="side-title">Mẹo nhanh</h2>
+          <ul>
+            <li>Nhấp đúp nền cây để căn giữa, chuột phải vào thẻ để mở menu.</li>
+            <li>Nhấn <kbd>?</kbd> để xem toàn bộ phím tắt.</li>
+          </ul>
+        </section>
 
-      <section class="panel workspace-panel">
-        <div class="workspace-toolbar">
-          <div>
-            <p class="panel-kicker">Không gian cây</p>
-            <h2>Cây gia phả</h2>
-          </div>
-          <div class="workspace-actions">
-            <button class="icon-button" id="zoom-out" type="button" aria-label="Thu nhỏ">-</button>
-            <button class="icon-button" id="zoom-in" type="button" aria-label="Phóng to">+</button>
-          </div>
-        </div>
+        <footer class="side-footer">
+          <span class="save-dot" id="save-dot"></span>
+          <span id="save-status">Đã lưu trong trình duyệt</span>
+        </footer>
+      </aside>
 
-        <div class="canvas-shell" id="canvas-shell" aria-label="Cây gia phả">
-          <div class="canvas-badge">Kéo nền để di chuyển khung nhìn</div>
-          <div class="tree-viewport" id="tree-viewport">
-            <svg class="tree-links" id="tree-links" aria-hidden="true"></svg>
-            <div class="tree-layer" id="tree-layer"></div>
-          </div>
-        </div>
-      </section>
-
-      <aside class="panel inspector-panel">
-        <div class="panel-head">
-          <p class="panel-kicker">Chỉnh sửa thành viên</p>
-          <h2>Thông tin thành viên</h2>
-        </div>
-
-        <p class="panel-copy" id="inspector-empty">
-          Chọn một thành viên trong cây để cập nhật nội dung, thế hệ và mô tả chi tiết.
-        </p>
-
-        <form class="inspector-form" id="inspector-form" autocomplete="off" hidden>
-          <label>
-            <span>Họ tên</span>
-            <input id="field-name" name="name" type="text" placeholder="Nhập tên thành viên" />
-          </label>
-
-          <label>
-            <span>Chức danh / vai trò</span>
-            <input id="field-role" name="role" type="text" placeholder="Ví dụ: Trưởng nhánh, hậu duệ..." />
-          </label>
-
-          <div class="field-grid">
-            <label>
-              <span>Thế hệ</span>
-              <input id="field-generation" name="generation" type="number" min="1" max="12" />
-            </label>
-
-            <label>
-              <span>Năm tháng</span>
-              <input id="field-years" name="years" type="text" placeholder="1892 - 1958" />
-            </label>
-          </div>
-
-          <label>
-            <span>Nhánh / chi</span>
-            <input id="field-branch" name="branch" type="text" placeholder="Nhánh trưởng, nhánh Bắc..." />
-          </label>
-
-          <label>
-            <span>Ghi chú</span>
-            <textarea
-              id="field-note"
-              name="note"
-              rows="5"
-              placeholder="Thêm ghi chú ngắn về kỷ niệm, nghề nghiệp, quê quán..."
-            ></textarea>
-          </label>
-        </form>
-
-        <div class="relationship-card">
-          <h3>Thông tin liên kết</h3>
-          <dl class="relationship-list">
-            <div>
-              <dt>Cha / mẹ</dt>
-              <dd id="relation-parent">-</dd>
+      <!-- ============ STAGE ============ -->
+      <main class="stage" id="stage">
+        <!-- Tree view -->
+        <section class="view view-tree" data-panel="tree">
+          <div class="canvas" id="canvas-shell" aria-label="Cây gia phả">
+            <div class="viewport" id="tree-viewport">
+              <svg class="tree-links" id="tree-links" aria-hidden="true"></svg>
+              <div class="tree-layer" id="tree-layer"></div>
             </div>
+          </div>
+
+          <nav class="breadcrumb" id="breadcrumb" aria-label="Dòng dõi"></nav>
+
+          <div class="canvas-toolbar" role="toolbar" aria-label="Điều khiển cây">
+            <button class="tool" id="zoom-out" type="button" title="Thu nhỏ (-)"><svg class="ico"><use href="#i-minus"/></svg></button>
+            <button class="tool zoom-label" id="zoom-indicator" type="button" title="Về 100%">100%</button>
+            <button class="tool" id="zoom-in" type="button" title="Phóng to (+)"><svg class="ico"><use href="#i-plus"/></svg></button>
+            <span class="tool-sep"></span>
+            <button class="tool" id="fit-view" type="button" title="Căn vừa màn hình (F)"><svg class="ico"><use href="#i-fit"/></svg></button>
+            <button class="tool" id="auto-layout" type="button" title="Tự sắp xếp cây (L)"><svg class="ico"><use href="#i-layout"/></svg><span>Sắp xếp</span></button>
+            <button class="tool" id="toggle-lineage" type="button" aria-pressed="true" title="Làm nổi bật dòng dõi"><svg class="ico"><use href="#i-eye"/></svg></button>
+            <button class="tool" id="collapse-all" type="button" title="Thu gọn tất cả"><svg class="ico"><use href="#i-collapse"/></svg></button>
+            <button class="tool" id="expand-all" type="button" title="Mở rộng tất cả"><svg class="ico"><use href="#i-expand"/></svg></button>
+            <span class="tool-sep"></span>
+            <button class="tool" id="fullscreen" type="button" title="Toàn màn hình"><svg class="ico"><use href="#i-full"/></svg></button>
+          </div>
+
+          <label class="auto-switch" title="Tự sắp xếp lại khi thêm/xóa/thu gọn">
+            <input type="checkbox" id="auto-layout-toggle" />
+            <span class="switch"></span>
+            <span>Tự sắp xếp</span>
+          </label>
+
+          <div class="minimap" id="minimap-wrap">
+            <canvas id="minimap" width="200" height="132" aria-label="Bản đồ thu nhỏ"></canvas>
+          </div>
+        </section>
+
+        <!-- List view -->
+        <section class="view view-list" data-panel="list" hidden>
+          <header class="view-head">
             <div>
-              <dt>Số con trực tiếp</dt>
-              <dd id="relation-children">0</dd>
+              <h2>Danh sách thành viên</h2>
+              <p id="list-count" class="view-sub"></p>
             </div>
+            <div class="input-icon">
+              <svg class="ico"><use href="#i-search"/></svg>
+              <input id="list-query" type="search" placeholder="Lọc nhanh trong danh sách…" autocomplete="off" />
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table class="member-table">
+              <thead>
+                <tr>
+                  <th data-sort="name">Họ tên</th>
+                  <th data-sort="generation">Đời</th>
+                  <th data-sort="branch">Nhánh</th>
+                  <th data-sort="birth">Năm tháng</th>
+                  <th data-sort="role">Vai trò</th>
+                  <th data-sort="parent">Cha/Mẹ</th>
+                  <th data-sort="children" class="num">Con</th>
+                </tr>
+              </thead>
+              <tbody id="member-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Stats view -->
+        <section class="view view-stats" data-panel="stats" hidden>
+          <header class="view-head">
             <div>
-              <dt>Kích thước nhánh</dt>
-              <dd id="relation-branch-size">0</dd>
+              <h2>Thống kê dòng họ</h2>
+              <p class="view-sub">Số liệu tính trên toàn bộ dữ liệu, không phụ thuộc bộ lọc.</p>
             </div>
-          </dl>
+          </header>
+          <div class="stats-grid" id="stats-grid"></div>
+        </section>
+
+        <!-- Timeline view -->
+        <section class="view view-timeline" data-panel="timeline" hidden>
+          <header class="view-head">
+            <div>
+              <h2>Dòng thời gian</h2>
+              <p class="view-sub">Mỗi thanh là một cuộc đời, từ năm sinh tới năm mất (hoặc hiện tại).</p>
+            </div>
+            <ul class="inline-legend">
+              <li><i class="swatch male"></i>Nam</li>
+              <li><i class="swatch female"></i>Nữ</li>
+              <li><i class="swatch unknown"></i>Chưa rõ</li>
+            </ul>
+          </header>
+          <div class="timeline" id="timeline"></div>
+        </section>
+      </main>
+
+      <!-- ============ DRAWER ============ -->
+      <aside class="drawer" id="drawer" aria-label="Thông tin thành viên">
+        <div class="drawer-empty" id="drawer-empty">
+          <div class="empty-art" aria-hidden="true"><svg class="ico"><use href="#i-users"/></svg></div>
+          <h3>Chưa chọn thành viên</h3>
+          <p>Bấm vào một thẻ trên cây hoặc một dòng trong danh sách để xem và chỉnh sửa.</p>
+        </div>
+
+        <div class="drawer-body" id="drawer-body" hidden>
+          <button class="icon-btn drawer-close" id="drawer-close" type="button" aria-label="Đóng"><svg class="ico"><use href="#i-x"/></svg></button>
+
+          <div class="profile">
+            <button class="avatar-xl" id="avatar-btn" type="button" title="Đổi ảnh đại diện">
+              <span id="avatar-content"></span>
+              <span class="avatar-cam"><svg class="ico"><use href="#i-camera"/></svg></span>
+            </button>
+            <div class="profile-text">
+              <h2 id="profile-name">-</h2>
+              <p id="profile-sub">-</p>
+              <button class="link-btn" id="remove-photo" type="button" hidden>Xóa ảnh</button>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <button class="qa" id="add-child" type="button"><svg class="ico"><use href="#i-child"/></svg><span>Thêm con</span></button>
+            <button class="qa" id="add-sibling" type="button"><svg class="ico"><use href="#i-sibling"/></svg><span>Thêm anh em</span></button>
+            <button class="qa" id="focus-node" type="button"><svg class="ico"><use href="#i-target"/></svg><span>Xem trên cây</span></button>
+            <button class="qa danger" id="delete-branch" type="button"><svg class="ico"><use href="#i-trash"/></svg><span>Xóa nhánh</span></button>
+          </div>
+
+          <form class="form" id="inspector-form" autocomplete="off">
+            <fieldset>
+              <legend>Thông tin cơ bản</legend>
+              <label class="field">
+                <span>Họ tên</span>
+                <input name="name" type="text" placeholder="Nhập tên thành viên" />
+              </label>
+              <div class="field">
+                <span>Giới tính</span>
+                <div class="segmented gender-seg">
+                  <label><input type="radio" name="gender" value="male" /><span><i class="dot male"></i>Nam</span></label>
+                  <label><input type="radio" name="gender" value="female" /><span><i class="dot female"></i>Nữ</span></label>
+                  <label><input type="radio" name="gender" value="" /><span>Chưa rõ</span></label>
+                </div>
+              </div>
+              <div class="field-row">
+                <label class="field">
+                  <span>Đời thứ</span>
+                  <input name="generation" type="number" min="1" max="40" />
+                </label>
+                <label class="field">
+                  <span>Năm sinh – mất</span>
+                  <input name="years" type="text" placeholder="1892 - 1958" />
+                </label>
+              </div>
+              <label class="check">
+                <input name="deceased" type="checkbox" />
+                <span class="switch"></span>
+                <span>Đã mất</span>
+              </label>
+              <label class="field">
+                <span>Vai trò / chức danh</span>
+                <input name="role" type="text" placeholder="Trưởng nhánh, người giữ phả…" />
+              </label>
+              <label class="field">
+                <span>Nhánh / chi</span>
+                <input name="branch" type="text" list="branch-options" placeholder="Nhánh Bắc, chi trưởng…" />
+                <datalist id="branch-options"></datalist>
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Chi tiết</legend>
+              <label class="field">
+                <span>Vợ / chồng</span>
+                <input name="spouse" type="text" placeholder="Tên vợ hoặc chồng" />
+              </label>
+              <div class="field-row">
+                <label class="field">
+                  <span>Nghề nghiệp</span>
+                  <input name="occupation" type="text" placeholder="Giáo viên…" />
+                </label>
+                <label class="field">
+                  <span>Quê quán</span>
+                  <input name="hometown" type="text" placeholder="Nam Định…" />
+                </label>
+              </div>
+              <label class="field">
+                <span>Ghi chú</span>
+                <textarea name="note" rows="4" placeholder="Kỷ niệm, công trạng, nơi an táng…"></textarea>
+              </label>
+            </fieldset>
+          </form>
+
+          <section class="family">
+            <h3>Gia đình</h3>
+            <dl>
+              <div><dt>Cha / mẹ</dt><dd id="rel-parent"></dd></div>
+              <div><dt>Anh chị em</dt><dd id="rel-siblings"></dd></div>
+              <div><dt>Con</dt><dd id="rel-children"></dd></div>
+            </dl>
+            <div class="family-stats">
+              <div><strong id="rel-branch-size">0</strong><span>người trong nhánh</span></div>
+              <div><strong id="rel-depth">0</strong><span>đời hậu duệ</span></div>
+              <div><strong id="rel-age">–</strong><span id="rel-age-label">tuổi</span></div>
+            </div>
+          </section>
         </div>
       </aside>
-    </main>
+    </div>
   </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- Search palette -->
+  <div class="modal" id="search-modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="palette" role="dialog" aria-modal="true" aria-label="Tìm thành viên">
+      <div class="palette-input">
+        <svg class="ico"><use href="#i-search"/></svg>
+        <input id="search-input" type="search" placeholder="Tên, vai trò, nhánh, năm, quê quán…" autocomplete="off" spellcheck="false" />
+        <kbd>Esc</kbd>
+      </div>
+      <ul class="palette-results" id="search-results" role="listbox"></ul>
+      <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> di chuyển</span><span><kbd>Enter</kbd> chọn</span></div>
+    </div>
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="modal" id="help-modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <header><h2 id="help-title">Phím tắt</h2><button class="icon-btn" data-close aria-label="Đóng"><svg class="ico"><use href="#i-x"/></svg></button></header>
+      <dl class="shortcuts">
+        <div><dt><kbd>Ctrl</kbd><kbd>K</kbd></dt><dd>Tìm thành viên</dd></div>
+        <div><dt><kbd>Ctrl</kbd><kbd>Z</kbd></dt><dd>Hoàn tác</dd></div>
+        <div><dt><kbd>Ctrl</kbd><kbd>Y</kbd></dt><dd>Làm lại</dd></div>
+        <div><dt><kbd>N</kbd></dt><dd>Thêm con cho người đang chọn</dd></div>
+        <div><dt><kbd>S</kbd></dt><dd>Thêm anh em</dd></div>
+        <div><dt><kbd>Delete</kbd></dt><dd>Xóa nhánh đang chọn</dd></div>
+        <div><dt><kbd>C</kbd></dt><dd>Thu gọn / mở nhánh</dd></div>
+        <div><dt><kbd>L</kbd></dt><dd>Tự sắp xếp cây</dd></div>
+        <div><dt><kbd>F</kbd></dt><dd>Căn vừa màn hình</dd></div>
+        <div><dt><kbd>+</kbd><kbd>-</kbd></dt><dd>Phóng to / thu nhỏ</dd></div>
+        <div><dt><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></dt><dd>Dịch thẻ đang chọn (giữ Shift để nhanh hơn)</dd></div>
+        <div><dt><kbd>T</kbd></dt><dd>Đổi giao diện sáng / tối</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Chuyển chế độ xem</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Bỏ chọn / đóng cửa sổ</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Context menu -->
+  <div class="dropdown context-menu" id="context-menu" role="menu" hidden>
+    <button role="menuitem" data-action="ctx-child"><svg class="ico"><use href="#i-child"/></svg>Thêm con</button>
+    <button role="menuitem" data-action="ctx-sibling"><svg class="ico"><use href="#i-sibling"/></svg>Thêm anh em</button>
+    <button role="menuitem" data-action="ctx-collapse"><svg class="ico"><use href="#i-collapse"/></svg><span>Thu gọn nhánh</span></button>
+    <button role="menuitem" data-action="ctx-focus"><svg class="ico"><use href="#i-target"/></svg>Căn vào giữa</button>
+    <hr />
+    <button role="menuitem" data-action="ctx-delete" class="danger"><svg class="ico"><use href="#i-trash"/></svg>Xóa nhánh</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button id="toast-action" type="button" hidden></button></div>
+
+  <input id="import-json" type="file" accept="application/json,.json" hidden />
+  <input id="photo-input" type="file" accept="image/*" hidden />
 
   <script src="script.js"></script>
 </body>
